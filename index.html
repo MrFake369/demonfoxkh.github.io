@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEMON FOX ESport — MLBB Professional Team</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { inter: ['Inter', 'sans-serif'] } } }
+        }
+    </script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        html { scroll-behavior: smooth; }
+        ::selection { background: rgba(249, 115, 22, 0.3); color: #fed7aa; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #09090b; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+        .glow-orange { text-shadow: 0 0 40px rgba(249, 115, 22, 0.4), 0 0 80px rgba(249, 115, 22, 0.15); }
+        .glow-box { box-shadow: 0 0 30px rgba(249, 115, 22, 0.15), 0 0 60px rgba(249, 115, 22, 0.05); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(249, 115, 22, 0.1); border-color: rgba(249, 115, 22, 0.3); }
+
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        @keyframes pulse-glow { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+        .hero-bg {
+            background: radial-gradient(ellipse at 30% 50%, rgba(249, 115, 22, 0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 30%, rgba(234, 88, 12, 0.05) 0%, transparent 50%),
+                        #09090b;
+        }
+
+        .gradient-border { position: relative; }
+        .gradient-border::before {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+            background: linear-gradient(135deg, #f97316, #ea580c, transparent, transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+        }
+
+        .player-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, transparent, #f97316, transparent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .player-card:hover::before { opacity: 1; }
+
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -2px; left: 0;
+            width: 0; height: 2px; background: #f97316; transition: width 0.3s;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        .match-win { border-left: 3px solid #10b981; }
+        .match-loss { border-left: 3px solid #ef4444; }
+        .match-upcoming { border-left: 3px solid #f97316; }
+
+        .stat-number {
+            background: linear-gradient(180deg, #f97316, #ea580c);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        .roster-carousel { position: relative; overflow: hidden; }
+        .roster-track {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .roster-slide { min-width: 100%; flex-shrink: 0; }
+
+        .carousel-btn {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(24, 24, 27, 0.9); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a1a1aa; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(8px);
+        }
+        .carousel-btn:hover {
+            background: rgba(249, 115, 22, 0.2); border-color: rgba(249, 115, 22, 0.5);
+            color: #f97316; transform: scale(1.1);
+        }
+        .carousel-btn:active { transform: scale(0.95); }
+
+        .carousel-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #3f3f46; cursor: pointer; transition: all 0.3s ease;
+        }
+        .carousel-dot.active {
+            background: #f97316; box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+            width: 24px; border-radius: 4px;
+        }
+
+        .player-image-wrapper { position: relative; overflow: hidden; }
+        .player-image-wrapper::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
+            background: linear-gradient(to top, #09090b, transparent); pointer-events: none;
+        }
+        .player-image-wrapper::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, transparent 50%);
+            pointer-events: none; z-index: 1;
+        }
+
+        .role-badge { position: relative; overflow: hidden; }
+        .role-badge::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, #f97316, #ea580c); opacity: 0.15;
+        }
+
+        .toast {
+            position: fixed; bottom: 2rem; right: 2rem;
+            background: #18181b; border: 1px solid rgba(249,115,22,0.3);
+            color: #fff; padding: 1rem 1.5rem; border-radius: 8px;
+            transform: translateY(120%); transition: transform 0.4s ease; z-index: 100;
+        }
+        .toast.show { transform: translateY(0); }
+    </style>
+</head>
+<body class="bg-[#09090b] text-white overflow-x-hidden">
+
+    <div id="toast" class="toast">
+        <div class="flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5 text-orange-500"></i>
+            <span id="toast-msg" class="text-sm">Message sent!</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-white/5" style="backdrop-filter: blur(12px); background: rgba(9,9,11,0.85);">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center font-black text-sm group-hover:bg-orange-400 transition-colors">DF</div>
+                <span class="text-sm font-bold tracking-wider uppercase">Demon Fox</span>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#home" class="nav-link text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors">Home</a>
+                <a href="#about" class="nav-link text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors">About</a>
+                <a href="#roster" class="nav-link text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors">Roster</a>
+                <a href="#matches" class="nav-link text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors">Matches</a>
+                <a href="#achievements" class="nav-link text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors">Achievements</a>
+                <a href="#contact" class="nav-link text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors">Contact</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="#contact" class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold uppercase tracking-wider rounded transition-all">Join Us</a>
+                <button id="mobile-menu-btn" class="md:hidden text-zinc-400 hover:text-white transition-colors"><i data-lucide="menu" class="w-5 h-5"></i></button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden border-t border-white/5 bg-[#09090b]/95" style="backdrop-filter: blur(12px);">
+            <div class="px-6 py-4 flex flex-col gap-3">
+                <a href="#home" class="text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors py-2">Home</a>
+                <a href="#about" class="text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors py-2">About</a>
+                <a href="#roster" class="text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors py-2">Roster</a>
+                <a href="#matches" class="text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors py-2">Matches</a>
+                <a href="#achievements" class="text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors py-2">Achievements</a>
+                <a href="#contact" class="text-xs font-medium uppercase tracking-wider text-zinc-400 hover:text-white transition-colors py-2">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-bg min-h-screen flex items-center relative overflow-hidden">
+        <div class="absolute top-20 right-10 w-72 h-72 bg-orange-500/5 rounded-full blur-[100px] animate-pulse-glow"></div>
+        <div class="absolute bottom-20 left-10 w-96 h-96 bg-orange-600/5 rounded-full blur-[120px] animate-pulse-glow" style="animation-delay: 1s;"></div>
+        <div class="absolute top-1/3 left-1/4 w-2 h-2 bg-orange-500/40 rounded-full animate-float"></div>
+        <div class="absolute top-1/2 right-1/3 w-1.5 h-1.5 bg-orange-400/30 rounded-full animate-float" style="animation-delay: 1.5s;"></div>
+        <div class="absolute bottom-1/3 right-1/4 w-1 h-1 bg-orange-500/50 rounded-full animate-float" style="animation-delay: 0.8s;"></div>
+
+        <div class="max-w-7xl mx-auto px-6 pt-28 pb-20 relative z-10">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <!-- Left: Branding -->
+                <div>
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="h-px w-12 bg-orange-500"></div>
+                        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500">MLBB Professional Team</span>
+                    </div>
+                    <h1 class="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter leading-[0.9] mb-6">
+                        <span class="glow-orange text-white">Demon</span><br>
+                        <span class="bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent">Fox</span>
+                    </h1>
+                    <p class="text-zinc-400 text-sm leading-relaxed max-w-md mb-10">
+                        Forged in the flames of competition, we are the apex predators of the Land of Dawn.
+                        Five warriors, one mission — total domination. No mercy, only victory.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#roster" class="inline-flex items-center gap-2 px-8 py-4 bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold uppercase tracking-wider rounded transition-all">
+                            <i data-lucide="users" class="w-4 h-4"></i> Meet the Squad
+                        </a>
+                        <a href="#matches" class="inline-flex items-center gap-2 px-8 py-4 border border-white/10 hover:border-orange-500/30 text-white text-xs font-bold uppercase tracking-wider rounded transition-all hover:bg-white/5">
+                            <i data-lucide="trophy" class="w-4 h-4"></i> Match Schedule
+                        </a>
+                    </div>
+                    <div class="flex gap-10 mt-14">
+                        <div><div class="stat-number text-3xl font-black">117</div><div class="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">Wins</div></div>
+                        <div><div class="stat-number text-3xl font-black">0</div><div class="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">Trophies</div></div>
+                        <div><div class="stat-number text-3xl font-black">68%</div><div class="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">Win Rate</div></div>
+                    </div>
+                </div>
+
+                <!-- Right: Roster Carousel -->
+                <div class="relative">
+                    <div class="roster-carousel rounded-2xl glow-box" id="rosterCarousel">
+                        <div class="roster-track" id="rosterTrack">
+
+                            <!-- ========== SLIDE 1 — exp ========== -->
+                            <div class="roster-slide">
+                                <div class="relative rounded-2xl overflow-hidden border border-white/10 bg-zinc-900/40">
+                                    <div class="player-image-wrapper h-[420px] lg:h-[480px]">
+                                        <!-- 🔁 REPLACE: Put your own image URL for Kitsune below -->
+                                        <img src="exp.jpg" alt="Polol" class="w-full h-full object-cover opacity-70" style="filter: contrast(1.1) saturate(0.8);">
+                                    </div>
+                                    <div class="absolute bottom-0 left-0 right-0 p-6 z-10">
+                                        <div class="role-badge inline-flex items-center gap-2 px-3 py-1.5 rounded mb-3 border border-orange-500/30">
+                                            <i data-lucide="sword" class="w-3 h-3 text-orange-500"></i>
+                                            <span class="text-[10px] font-bold uppercase tracking-widest text-orange-500">EXP Lane</span>
+                                        </div>
+                                        <h3 class="text-3xl font-black uppercase tracking-tight">Polol</h3>
+                                        <p class="text-xs text-zinc-400 mt-1">exp</p>
+                                        <div class="flex gap-2 mt-3">
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Uranus</span>
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Esmeralda</span>
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Khufra</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ========== SLIDE 2 — jungler ========== -->
+                            <div class="roster-slide">
+                                <div class="relative rounded-2xl overflow-hidden border border-white/10 bg-zinc-900/40">
+                                    <div class="player-image-wrapper h-[420px] lg:h-[480px]">
+                                        <!-- 🔁 REPLACE: Put your own image URL for Phantom below -->
+                                        <img src="jungler.jpg" alt="Nani" class="w-full h-full object-cover opacity-70" style="filter: contrast(1.1) saturate(0.8);">
+                                    </div>
+                                    <div class="absolute bottom-0 left-0 right-0 p-6 z-10">
+                                        <div class="role-badge inline-flex items-center gap-2 px-3 py-1.5 rounded mb-3 border border-orange-500/30">
+                                            <i data-lucide="crosshair" class="w-3 h-3 text-orange-500"></i>
+                                            <span class="text-[10px] font-bold uppercase tracking-widest text-orange-500">Jungler</span>
+                                        </div>
+                                        <h3 class="text-3xl font-black uppercase tracking-tight">Nani</h3>
+                                        <p class="text-xs text-zinc-400 mt-1">Jungler</p>
+                                        <div class="flex gap-2 mt-3">
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Ling</span>
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Hayabusa</span>
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Joy</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ========== SLIDE 3 — mid ========== -->
+                            <div class="roster-slide">
+                                <div class="relative rounded-2xl overflow-hidden border border-white/10 bg-zinc-900/40">
+                                    <div class="player-image-wrapper h-[420px] lg:h-[480px]">
+                                        <!-- 🔁 REPLACE: Put your own image URL for Yūrei below -->
+                                        <img src="mid.jpg" alt="Ra_Tzy" class="w-full h-full object-cover opacity-70" style="filter: contrast(1.1) saturate(0.8);">
+                                    </div>
+                                    <div class="absolute bottom-0 left-0 right-0 p-6 z-10">
+                                        <div class="role-badge inline-flex items-center gap-2 px-3 py-1.5 rounded mb-3 border border-orange-500/30">
+                                            <i data-lucide="flame" class="w-3 h-3 text-orange-500"></i>
+                                            <span class="text-[10px] font-bold uppercase tracking-widest text-orange-500">Mid Lane</span>
+                                        </div>
+                                        <h3 class="text-3xl font-black uppercase tracking-tight">Ra_Tzy</h3>
+                                        <p class="text-xs text-zinc-400 mt-1">Mage</p>
+                                        <div class="flex gap-2 mt-3">
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Pharsa</span>
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Valir</span>
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Kagura</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ========== SLIDE 4 — gold ========== -->
+                            <div class="roster-slide">
+                                <div class="relative rounded-2xl overflow-hidden border border-white/10 bg-zinc-900/40">
+                                    <div class="player-image-wrapper h-[420px] lg:h-[480px]">
+                                        <!-- 🔁 REPLACE: Put your own image URL for Blaze below -->
+                                        <img src="gold.jpg" alt="celi_ju" class="w-full h-full object-cover opacity-70" style="filter: contrast(1.1) saturate(0.8);">
+                                    </div>
+                                    <div class="absolute bottom-0 left-0 right-0 p-6 z-10">
+                                        <div class="role-badge inline-flex items-center gap-2 px-3 py-1.5 rounded mb-3 border border-orange-500/30">
+                                            <i data-lucide="target" class="w-3 h-3 text-orange-500"></i>
+                                            <span class="text-[10px] font-bold uppercase tracking-widest text-orange-500">Gold Lane</span>
+                                        </div>
+                                        <h3 class="text-3xl font-black uppercase tracking-tight">celi_ju</h3>
+                                        <p class="text-xs text-zinc-400 mt-1">Marksman</p>
+                                        <div class="flex gap-2 mt-3">
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Brody</span>
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Wanwan</span>
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Beatrix</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ========== SLIDE 5 — Roamer ========== -->
+                            <div class="roster-slide">
+                                <div class="relative rounded-2xl overflow-hidden border border-white/10 bg-zinc-900/40">
+                                    <div class="player-image-wrapper h-[420px] lg:h-[480px]">
+                                        <!-- 🔁 REPLACE: Put your own image URL for Shadow below -->
+                                        <img src="roam.jpg" alt="Tank_FOX" class="w-full h-full object-cover opacity-70" style="filter: contrast(1.1) saturate(0.8);">
+                                    </div>
+                                    <div class="absolute bottom-0 left-0 right-0 p-6 z-10">
+                                        <div class="role-badge inline-flex items-center gap-2 px-3 py-1.5 rounded mb-3 border border-orange-500/30">
+                                            <i data-lucide="shield" class="w-3 h-3 text-orange-500"></i>
+                                            <span class="text-[10px] font-bold uppercase tracking-widest text-orange-500">Roam</span>
+                                        </div>
+                                        <h3 class="text-3xl font-black uppercase tracking-tight">Tank FOx</h3>
+                                        <p class="text-xs text-zinc-400 mt-1">Tank/Support</p>
+                                        <div class="flex gap-2 mt-3">
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Tigreal</span>
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Atlas</span>
+                                            <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-300 font-medium">Mathilda</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Carousel Controls -->
+                    <div class="flex items-center justify-between mt-5">
+                        <div class="flex items-center gap-2" id="carouselDots">
+                            <button class="carousel-dot active" data-index="0" aria-label="Player 1"></button>
+                            <button class="carousel-dot" data-index="1" aria-label="Player 2"></button>
+                            <button class="carousel-dot" data-index="2" aria-label="Player 3"></button>
+                            <button class="carousel-dot" data-index="3" aria-label="Player 4"></button>
+                            <button class="carousel-dot" data-index="4" aria-label="Player 5"></button>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="carousel-btn" id="prevBtn" aria-label="Previous player">
+                                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                            </button>
+                            <button class="carousel-btn" id="nextBtn" aria-label="Next player">
+                                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-3 px-1">
+                        <span class="text-[10px] uppercase tracking-widest text-zinc-600">Navigate Players</span>
+                        <span class="text-[10px] font-bold text-zinc-500" id="playerCounter">1 / 5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-float">
+            <span class="text-[10px] uppercase tracking-widest text-zinc-600">Scroll</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-600"></i>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-24 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="relative">
+                    <!-- 🔁 REPLACE: About section image -->
+                    <img src="Demon.jpg" alt="Team Practice" class="w-full h-[360px] object-cover rounded-xl opacity-70" style="filter: contrast(1.1) saturate(0.7);">
+                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-[#09090b]/80 to-transparent"></div>
+                    <div class="absolute top-6 right-6 p-4 rounded-lg bg-[#18181b]/90 border border-white/10" style="backdrop-filter: blur(12px);">
+                        <div class="text-orange-500 text-2xl font-black">Since</div>
+                        <div class="text-white text-lg font-bold">2021</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center gap-3 mb-4"><div class="h-px w-12 bg-orange-500"></div><span class="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500">Our Story</span></div>
+                    <h2 class="text-3xl font-bold tracking-tight mb-6">Born to Dominate<br>the Land of Dawn</h2>
+                    <p class="text-zinc-400 text-sm leading-relaxed mb-6">Demon Fox ESport was founded in 2021 by a group of elite MLBB players who shared one vision — to become the most feared team in competitive Mobile Legends. Starting from grassroots tournaments, we clawed our way to the top through relentless practice, strategic innovation, and an unbreakable team spirit.</p>
+                    <p class="text-zinc-400 text-sm leading-relaxed mb-8">Today, we stand as one of the top contenders in the MPL circuit, known for our aggressive playstyle, clutch team fights, and the never-surrender mentality that defines the Demon Fox way.</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 rounded-xl bg-zinc-900/40 border border-white/5"><i data-lucide="flame" class="w-5 h-5 text-orange-500 mb-2"></i><div class="text-sm font-semibold">Aggressive Meta</div><div class="text-xs text-zinc-500 mt-1">Pressure-first strategy</div></div>
+                        <div class="p-4 rounded-xl bg-zinc-900/40 border border-white/5"><i data-lucide="shield" class="w-5 h-5 text-orange-500 mb-2"></i><div class="text-sm font-semibold">Iron Defense</div><div class="text-xs text-zinc-500 mt-1">Unbreakable teamwork</div></div>
+                        <div class="p-4 rounded-xl bg-zinc-900/40 border border-white/5"><i data-lucide="zap" class="w-5 h-5 text-orange-500 mb-2"></i><div class="text-sm font-semibold">Speed Rotate</div><div class="text-xs text-zinc-500 mt-1">Lightning map control</div></div>
+                        <div class="p-4 rounded-xl bg-zinc-900/40 border border-white/5"><i data-lucide="brain" class="w-5 h-5 text-orange-500 mb-2"></i><div class="text-sm font-semibold">Smart Draft</div><div class="text-xs text-zinc-500 mt-1">Deep hero pool</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roster Section -->
+    <section id="roster" class="py-24 relative">
+        <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/20 to-transparent"></div>
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="flex items-center justify-center gap-3 mb-4"><div class="h-px w-12 bg-orange-500"></div><span class="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500">The Pack</span><div class="h-px w-12 bg-orange-500"></div></div>
+                <h2 class="text-3xl font-bold tracking-tight">Full Roster Overview</h2>
+                <p class="text-zinc-500 text-sm mt-3 max-w-md mx-auto">Five predators, one den. Each player a master of their craft.</p>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                <div class="player-card card-hover relative p-6 rounded-xl bg-zinc-900/40 border border-white/5 text-center group">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-2 border-orange-500/30 group-hover:border-orange-500 transition-colors">
+                        <!-- 🔁 REPLACE: Kitsune roster thumbnail -->
+                        <img src="NPP.png" alt="Kitsune" class="w-full h-full object-cover" style="filter: contrast(1.1);">
+                    </div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-orange-500 mb-1">EXP Lane</div><h3 class="text-lg font-bold">???</h3><p class="text-xs text-zinc-500 mt-1">Team Captain</p>
+                    <div class="flex justify-center gap-2 mt-4"><span class="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">King exp</span><span class="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">sub player</span></div>
+                </div>
+                <div class="player-card card-hover relative p-6 rounded-xl bg-zinc-900/40 border border-white/5 text-center group">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-2 border-orange-500/30 group-hover:border-orange-500 transition-colors">
+                        <!-- 🔁 REPLACE: Phantom roster thumbnail -->
+                        <img src="NPP.png" alt="Phantom" class="w-full h-full object-cover" style="filter: contrast(1.1);">
+                    </div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-orange-500 mb-1">Jungler</div><h3 class="text-lg font-bold">Pollol</h3><p class="text-xs text-zinc-500 mt-1">Assassin God</p>
+                    <div class="flex justify-center gap-2 mt-4"><span class="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">King retri</span><span class="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">sub player</span></div>
+                </div>
+                <div class="player-card card-hover relative p-6 rounded-xl bg-zinc-900/40 border border-white/5 text-center group">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-2 border-orange-500/30 group-hover:border-orange-500 transition-colors">
+                        <!-- 🔁 REPLACE: Yūrei roster thumbnail -->
+                        <img src="NPP.png" alt="Yūrei" class="w-full h-full object-cover" style="filter: contrast(1.1);">
+                    </div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-orange-500 mb-1">Mid Lane</div><h3 class="text-lg font-bold">FakeBF</h3><p class="text-xs text-zinc-500 mt-1">Mage Specialist</p>
+                    <div class="flex justify-center gap-2 mt-4"><span class="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">King mid</span><span class="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">sub player</span></div>
+                </div>
+                <div class="player-card card-hover relative p-6 rounded-xl bg-zinc-900/40 border border-white/5 text-center group">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-2 border-orange-500/30 group-hover:border-orange-500 transition-colors">
+                        <!-- 🔁 REPLACE: Blaze roster thumbnail -->
+                        <img src="NPP.png" alt="Blaze" class="w-full h-full object-cover" style="filter: contrast(1.1);">
+                    </div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-orange-500 mb-1">Gold Lane</div><h3 class="text-lg font-bold">???</h3><p class="text-xs text-zinc-500 mt-1">Marksman Ace</p>
+                    <div class="flex justify-center gap-2 mt-4"><span class="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">King gold</span><span class="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">sub player</span></div>
+                </div>
+                <div class="player-card card-hover relative p-6 rounded-xl bg-zinc-900/40 border border-white/5 text-center group">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-2 border-orange-500/30 group-hover:border-orange-500 transition-colors">
+                        <!-- 🔁 REPLACE: Shadow roster thumbnail -->
+                        <img src="NPP.png" alt="Shadow" class="w-full h-full object-cover" style="filter: contrast(1.1);">
+                    </div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-orange-500 mb-1">Roam</div><h3 class="text-lg font-bold">???</h3><p class="text-xs text-zinc-500 mt-1">Tank/Support</p>
+                    <div class="flex justify-center gap-2 mt-4"><span class="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">King roam</span><span class="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-400">sub player</span></div>
+                </div>
+            </div>
+            <div class="mt-10 flex justify-center">
+                <div class="player-card card-hover relative p-6 rounded-xl bg-zinc-900/40 border border-white/5 flex items-center gap-6 max-w-md w-full group">
+                    <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-zinc-700 group-hover:border-orange-500 transition-colors flex-shrink-0">
+                        <!-- 🔁 REPLACE: Coach thumbnail -->
+                        <img src="NPP.png" alt="Sensei" class="w-full h-full object-cover" style="filter: contrast(1.1);">
+                    </div>
+                    <div><div class="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1">Head Coach</div><h3 class="text-lg font-bold">Free</h3><p class="text-xs text-zinc-500 mt-0.5">Mastermind behind every draft & strategy</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Matches Section -->
+    <section id="matches" class="py-24 relative bg-[#0c0c0e]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="flex items-center justify-center gap-3 mb-4"><div class="h-px w-12 bg-orange-500"></div><span class="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500">Battle Log</span><div class="h-px w-12 bg-orange-500"></div></div>
+                <h2 class="text-3xl font-bold tracking-tight">Matches</h2>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-zinc-400 mb-4 flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>Recent Results</h3>
+                    <div class="space-y-3">
+                        <div class="match-win p-4 rounded-lg bg-zinc-900/40 border border-white/5 flex items-center justify-between"><div class="flex items-center gap-4"><div class="w-8 h-8 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 text-xs font-bold">DF</div><div><div class="text-sm font-semibold">Demon Fox</div><div class="text-[10px] text-zinc-500">vs Shadow Wolves</div></div></div><div class="text-right"><div class="text-sm font-bold text-green-400">2 - 0</div><div class="text-[10px] text-zinc-600">MPL S14</div></div></div>
+                        <div class="match-win p-4 rounded-lg bg-zinc-900/40 border border-white/5 flex items-center justify-between"><div class="flex items-center gap-4"><div class="w-8 h-8 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 text-xs font-bold">DF</div><div><div class="text-sm font-semibold">Demon Fox</div><div class="text-[10px] text-zinc-500">vs Iron Titans</div></div></div><div class="text-right"><div class="text-sm font-bold text-green-400">2 - 1</div><div class="text-[10px] text-zinc-600">MPL S14</div></div></div>
+                        <div class="match-loss p-4 rounded-lg bg-zinc-900/40 border border-white/5 flex items-center justify-between"><div class="flex items-center gap-4"><div class="w-8 h-8 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 text-xs font-bold">DF</div><div><div class="text-sm font-semibold">Demon Fox</div><div class="text-[10px] text-zinc-500">vs Phoenix Rise</div></div></div><div class="text-right"><div class="text-sm font-bold text-red-400">1 - 2</div><div class="text-[10px] text-zinc-600">MPL S14</div></div></div>
+                        <div class="match-win p-4 rounded-lg bg-zinc-900/40 border border-white/5 flex items-center justify-between"><div class="flex items-center gap-4"><div class="w-8 h-8 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 text-xs font-bold">DF</div><div><div class="text-sm font-semibold">Demon Fox</div><div class="text-[10px] text-zinc-500">vs Ocean Kings</div></div></div><div class="text-right"><div class="text-sm font-bold text-green-400">2 - 0</div><div class="text-[10px] text-zinc-600">MPL S14</div></div></div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-zinc-400 mb-4 flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4 text-orange-500"></i>Upcoming</h3>
+                    <div class="space-y-3">
+                        <div class="match-upcoming p-4 rounded-lg bg-zinc-900/40 border border-white/5"><div class="flex items-center justify-between mb-3"><div class="text-[10px] font-bold uppercase tracking-widest text-orange-500">MPL Season 14</div><div class="text-[10px] text-zinc-600">Jan 18, 2025</div></div><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 text-xs font-bold">DF</div><span class="text-sm font-semibold">Demon Fox</span></div><span class="text-xs font-bold text-zinc-600">VS</span><div class="flex items-center gap-3"><span class="text-sm font-semibold">Dark Vipers</span><div class="w-8 h-8 bg-purple-500/10 rounded-full flex items-center justify-center text-purple-500 text-xs font-bold">DV</div></div></div><div class="mt-3 text-[10px] text-zinc-600 text-center">19:00 WIB · Best of 3</div></div>
+                        <div class="match-upcoming p-4 rounded-lg bg-zinc-900/40 border border-white/5"><div class="flex items-center justify-between mb-3"><div class="text-[10px] font-bold uppercase tracking-widest text-orange-500">MPL Season 14</div><div class="text-[10px] text-zinc-600">Jan 25, 2025</div></div><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 text-xs font-bold">DF</div><span class="text-sm font-semibold">Demon Fox</span></div><span class="text-xs font-bold text-zinc-600">VS</span><div class="flex items-center gap-3"><span class="text-sm font-semibold">Storm Blade</span><div class="w-8 h-8 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 text-xs font-bold">SB</div></div></div><div class="mt-3 text-[10px] text-zinc-600 text-center">20:00 WIB · Best of 3</div></div>
+                        <div class="match-upcoming p-4 rounded-lg bg-zinc-900/40 border border-white/5"><div class="flex items-center justify-between mb-3"><div class="text-[10px] font-bold uppercase tracking-widest text-orange-500">MPL Season 14</div><div class="text-[10px] text-zinc-600">Feb 01, 2025</div></div><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 text-xs font-bold">DF</div><span class="text-sm font-semibold">Demon Fox</span></div><span class="text-xs font-bold text-zinc-600">VS</span><div class="flex items-center gap-3"><span class="text-sm font-semibold">Red Dragons</span><div class="w-8 h-8 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 text-xs font-bold">RD</div></div></div><div class="mt-3 text-[10px] text-zinc-600 text-center">19:30 WIB · Best of 3</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Achievements Section -->
+    <section id="achievements" class="py-24 relative">
+        <div class="absolute inset-0 overflow-hidden"><div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-500/3 rounded-full blur-[150px]"></div></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-16">
+                <div class="flex items-center justify-center gap-3 mb-4"><div class="h-px w-12 bg-orange-500"></div><span class="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500">Hall of Fame</span><div class="h-px w-12 bg-orange-500"></div></div>
+                <h2 class="text-3xl font-bold tracking-tight">Achievements</h2>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                <div class="card-hover p-6 rounded-xl bg-zinc-900/40 border border-white/5 text-center"><div class="w-12 h-12 mx-auto mb-4 rounded-full bg-orange-500/10 flex items-center justify-center"><i data-lucide="trophy" class="w-6 h-6 text-orange-500"></i></div><div class="stat-number text-3xl font-black">1st</div><div class="text-sm font-semibold mt-1">MPL Season 12</div><div class="text-[10px] text-zinc-500 mt-1">Champion</div></div>
+                <div class="card-hover p-6 rounded-xl bg-zinc-900/40 border border-white/5 text-center"><div class="w-12 h-12 mx-auto mb-4 rounded-full bg-orange-500/10 flex items-center justify-center"><i data-lucide="medal" class="w-6 h-6 text-orange-500"></i></div><div class="stat-number text-3xl font-black">2nd</div><div class="text-sm font-semibold mt-1">M1 World Championship</div><div class="text-[10px] text-zinc-500 mt-1">Runner-up</div></div>
+                <div class="card-hover p-6 rounded-xl bg-zinc-900/40 border border-white/5 text-center"><div class="w-12 h-12 mx-auto mb-4 rounded-full bg-orange-500/10 flex items-center justify-center"><i data-lucide="award" class="w-6 h-6 text-orange-500"></i></div><div class="stat-number text-3xl font-black">1st</div><div class="text-sm font-semibold mt-1">MPL Season 13</div><div class="text-[10px] text-zinc-500 mt-1">Champion</div></div>
+                <div class="card-hover p-6 rounded-xl bg-zinc-900/40 border border-white/5 text-center"><div class="w-12 h-12 mx-auto mb-4 rounded-full bg-orange-500/10 flex items-center justify-center"><i data-lucide="crown" class="w-6 h-6 text-orange-500"></i></div><div class="stat-number text-3xl font-black">1st</div><div class="text-sm font-semibold mt-1">SEA Cup 2024</div><div class="text-[10px] text-zinc-500 mt-1">Champion</div></div>
+            </div>
+            <div class="p-8 rounded-xl bg-zinc-900/40 border border-white/5">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-zinc-400 mb-6 flex items-center gap-2"><i data-lucide="star" class="w-4 h-4 text-orange-500"></i>MVP Awards</h3>
+                <div class="grid sm:grid-cols-3 gap-6">
+                    <div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full overflow-hidden border border-orange-500/30"><img src="https://picsum.photos/seed/fox-phantom-jg/100/100.jpg" alt="Phantom" class="w-full h-full object-cover"></div><div><div class="text-sm font-semibold">Phantom</div><div class="text-[10px] text-orange-500 font-bold uppercase">MPL S12 MVP</div></div></div>
+                    <div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full overflow-hidden border border-orange-500/30"><img src="https://picsum.photos/seed/fox-blaze-gold/100/100.jpg" alt="Blaze" class="w-full h-full object-cover"></div><div><div class="text-sm font-semibold">Blaze</div><div class="text-[10px] text-orange-500 font-bold uppercase">MPL S13 MVP</div></div></div>
+                    <div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full overflow-hidden border border-orange-500/30"><img src="https://picsum.photos/seed/fox-kitsune-exp/100/100.jpg" alt="Kitsune" class="w-full h-full object-cover"></div><div><div class="text-sm font-semibold">Kitsune</div><div class="text-[10px] text-orange-500 font-bold uppercase">SEA Cup MVP</div></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery -->
+    <section class="py-24 relative bg-[#0c0c0e]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="flex items-center justify-center gap-3 mb-4"><div class="h-px w-12 bg-orange-500"></div><span class="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500">Moments</span><div class="h-px w-12 bg-orange-500"></div></div>
+                <h2 class="text-3xl font-bold tracking-tight">Gallery</h2>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- 🔁 REPLACE: Gallery images -->
+                <div class="group relative overflow-hidden rounded-xl aspect-square"><img src="https://picsum.photos/seed/mlbb-gallery1/400/400.jpg" alt="Gallery" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"><div class="absolute inset-0 bg-gradient-to-t from-[#09090b]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4"><span class="text-xs font-semibold">MPL S12 Finals</span></div></div>
+                <div class="group relative overflow-hidden rounded-xl aspect-square"><img src="https://picsum.photos/seed/mlbb-gallery2/400/400.jpg" alt="Gallery" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"><div class="absolute inset-0 bg-gradient-to-t from-[#09090b]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4"><span class="text-xs font-semibold">Team Huddle</span></div></div>
+                <div class="group relative overflow-hidden rounded-xl aspect-square"><img src="https://picsum.photos/seed/mlbb-gallery3/400/400.jpg" alt="Gallery" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"><div class="absolute inset-0 bg-gradient-to-t from-[#09090b]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4"><span class="text-xs font-semibold">Championship Moment</span></div></div>
+                <div class="group relative overflow-hidden rounded-xl aspect-square"><img src="https://picsum.photos/seed/mlbb-gallery4/400/400.jpg" alt="Gallery" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"><div class="absolute inset-0 bg-gradient-to-t from-[#09090b]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4"><span class="text-xs font-semibold">SEA Cup Victory</span></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sponsors -->
+    <section class="py-16 border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-8"><span class="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">Our Partners & Sponsors</span></div>
+            <div class="flex flex-wrap items-center justify-center gap-12">
+                <div class="group flex items-center gap-2 grayscale hover:grayscale-0 opacity-40 hover:opacity-100 transition-all cursor-pointer"><i data-lucide="gamepad-2" class="w-6 h-6 text-orange-500"></i><span class="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors">MOONTON</span></div>
+                <div class="group flex items-center gap-2 grayscale hover:grayscale-0 opacity-40 hover:opacity-100 transition-all cursor-pointer"><i data-lucide="headphones" class="w-6 h-6 text-orange-500"></i><span class="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors">SoundBlitz</span></div>
+                <div class="group flex items-center gap-2 grayscale hover:grayscale-0 opacity-40 hover:opacity-100 transition-all cursor-pointer"><i data-lucide="mouse" class="w-6 h-6 text-orange-500"></i><span class="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors">TechClaw</span></div>
+                <div class="group flex items-center gap-2 grayscale hover:grayscale-0 opacity-40 hover:opacity-100 transition-all cursor-pointer"><i data-lucide="cpu" class="w-6 h-6 text-orange-500"></i><span class="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors">NitroCore</span></div>
+                <div class="group flex items-center gap-2 grayscale hover:grayscale-0 opacity-40 hover:opacity-100 transition-all cursor-pointer"><i data-lucide="zap" class="w-6 h-6 text-orange-500"></i><span class="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors">VoltEdge</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="py-24 relative">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-orange-500/3 rounded-full blur-[150px]"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="grid lg:grid-cols-2 gap-16">
+                <div>
+                    <div class="flex items-center gap-3 mb-4"><div class="h-px w-12 bg-orange-500"></div><span class="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500">Join the Pack</span></div>
+                    <h2 class="text-3xl font-bold tracking-tight mb-6">Ready to Become<br>a Demon Fox?</h2>
+                    <p class="text-zinc-400 text-sm leading-relaxed mb-8">We're always looking for talented players, content creators, and passionate individuals to join our organization.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-4 rounded-xl bg-zinc-900/40 border border-white/5"><div class="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center"><i data-lucide="mail" class="w-5 h-5 text-orange-500"></i></div><div><div class="text-xs text-zinc-500">Email</div><div class="text-sm font-semibold">team@demonfox.gg</div></div></div>
+                        <div class="flex items-center gap-4 p-4 rounded-xl bg-zinc-900/40 border border-white/5"><div class="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center"><i data-lucide="message-circle" class="w-5 h-5 text-orange-500"></i></div><div><div class="text-xs text-zinc-500">Discord</div><div class="text-sm font-semibold">discord.gg/demonfox</div></div></div>
+                        <div class="flex items-center gap-4 p-4 rounded-xl bg-zinc-900/40 border border-white/5"><div class="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center"><i data-lucide="video" class="w-5 h-5 text-orange-500"></i></div><div><div class="text-xs text-zinc-500">TikTok</div><div class="text-sm font-semibold">@demonfoxesport</div></div></div>
+                    </div>
+                </div>
+                <div class="p-8 rounded-2xl bg-zinc-900/40 border border-white/5 gradient-border">
+                    <h3 class="text-lg font-bold mb-6">Send Us a Message</h3>
+                    <form id="contact-form" class="space-y-5">
+                        <div><label class="text-[10px] font-bold uppercase tracking-widest text-zinc-500 block mb-2">Your Name</label><input type="text" required placeholder="Enter your name" class="w-full px-4 py-3 bg-[#09090b] border border-zinc-800 rounded text-sm text-white placeholder-zinc-600 focus:border-orange-500/50 focus:outline-none transition-colors"></div>
+                        <div><label class="text-[10px] font-bold uppercase tracking-widest text-zinc-500 block mb-2">Email</label><input type="email" required placeholder="your@email.com" class="w-full px-4 py-3 bg-[#09090b] border border-zinc-800 rounded text-sm text-white placeholder-zinc-600 focus:border-orange-500/50 focus:outline-none transition-colors"></div>
+                        <div><label class="text-[10px] font-bold uppercase tracking-widest text-zinc-500 block mb-2">Role</label><select class="w-full px-4 py-3 bg-[#09090b] border border-zinc-800 rounded text-sm text-white focus:border-orange-500/50 focus:outline-none transition-colors"><option value="">Select your interest</option><option>Player Tryout</option><option>Content Creator</option><option>Coach / Analyst</option><option>Manager</option><option>Sponsorship</option><option>Other</option></select></div>
+                        <div><label class="text-[10px] font-bold uppercase tracking-widest text-zinc-500 block mb-2">Message</label><textarea required rows="4" placeholder="Tell us about yourself..." class="w-full px-4 py-3 bg-[#09090b] border border-zinc-800 rounded text-sm text-white placeholder-zinc-600 focus:border-orange-500/50 focus:outline-none transition-colors resize-none"></textarea></div>
+                        <button type="submit" class="w-full py-3.5 bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold uppercase tracking-wider rounded transition-all flex items-center justify-center gap-2"><i data-lucide="send" class="w-4 h-4"></i>Submit Application</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-16 border-t border-white/5 bg-[#09090b]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-12 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-4"><div class="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center font-black text-sm">DF</div><span class="text-sm font-bold tracking-wider uppercase">Demon Fox ESport</span></div>
+                    <p class="text-zinc-500 text-sm leading-relaxed max-w-sm mb-6">Professional Mobile Legends: Bang Bang team. Competing at the highest level with ferocity, strategy, and the spirit of the fox.</p>
+                    <div class="flex gap-3">
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-400 hover:text-orange-500 hover:border-orange-500/30 transition-all"><i data-lucide="youtube" class="w-4 h-4"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-400 hover:text-orange-500 hover:border-orange-500/30 transition-all"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-400 hover:text-orange-500 hover:border-orange-500/30 transition-all"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-400 hover:text-orange-500 hover:border-orange-500/30 transition-all"><i data-lucide="message-circle" class="w-4 h-4"></i></a>
+                    </div>
+                </div>
+                <div><h4 class="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-4">Quick Links</h4><ul class="space-y-2"><li><a href="#home" class="text-sm text-zinc-400 hover:text-orange-500 transition-colors">Home</a></li><li><a href="#about" class="text-sm text-zinc-400 hover:text-orange-500 transition-colors">About</a></li><li><a href="#roster" class="text-sm text-zinc-400 hover:text-orange-500 transition-colors">Roster</a></li><li><a href="#matches" class="text-sm text-zinc-400 hover:text-orange-500 transition-colors">Matches</a></li><li><a href="#achievements" class="text-sm text-zinc-400 hover:text-orange-500 transition-colors">Achievements</a></li></ul></div>
+                <div><h4 class="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-4">Community</h4><ul class="space-y-2"><li><a href="#" class="text-sm text-zinc-400 hover:text-orange-500 transition-colors">Discord Server</a></li><li><a href="#" class="text-sm text-zinc-400 hover:text-orange-500 transition-colors">TikTok</a></li><li><a href="#" class="text-sm text-zinc-400 hover:text-orange-500 transition-colors">YouTube</a></li><li><a href="#" class="text-sm text-zinc-400 hover:text-orange-500 transition-colors">Merch Store</a></li><li><a href="#contact" class="text-sm text-zinc-400 hover:text-orange-500 transition-colors">Join Us</a></li></ul></div>
+            </div>
+            <div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-xs text-zinc-600">© 2025 Demon Fox ESport. All rights reserved.</p>
+                <p class="text-xs text-zinc-600">Built with 🦊 and fire</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // ===== ROSTER CAROUSEL =====
+        const track = document.getElementById('rosterTrack');
+        const slides = track.querySelectorAll('.roster-slide');
+        const dots = document.querySelectorAll('.carousel-dot');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const counter = document.getElementById('playerCounter');
+        const totalSlides = slides.length;
+        let currentSlide = 0;
+        let autoPlayTimer = null;
+        let isHovering = false;
+
+        function goToSlide(index) {
+            if (index < 0) index = totalSlides - 1;
+            if (index >= totalSlides) index = 0;
+            currentSlide = index;
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+            dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+            counter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+        }
+
+        prevBtn.addEventListener('click', () => { goToSlide(currentSlide - 1); resetAutoPlay(); });
+        nextBtn.addEventListener('click', () => { goToSlide(currentSlide + 1); resetAutoPlay(); });
+        dots.forEach(dot => { dot.addEventListener('click', () => { goToSlide(parseInt(dot.dataset.index)); resetAutoPlay(); }); });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') { goToSlide(currentSlide - 1); resetAutoPlay(); }
+            if (e.key === 'ArrowRight') { goToSlide(currentSlide + 1); resetAutoPlay(); }
+        });
+
+        let touchStartX = 0;
+        const carousel = document.getElementById('rosterCarousel');
+        carousel.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+        carousel.addEventListener('touchend', (e) => {
+            const diff = touchStartX - e.changedTouches[0].screenX;
+            if (Math.abs(diff) > 50) { diff > 0 ? goToSlide(currentSlide + 1) : goToSlide(currentSlide - 1); resetAutoPlay(); }
+        }, { passive: true });
+
+        function startAutoPlay() { autoPlayTimer = setInterval(() => { if (!isHovering) goToSlide(currentSlide + 1); }, 4000); }
+        function resetAutoPlay() { clearInterval(autoPlayTimer); startAutoPlay(); }
+        carousel.addEventListener('mouseenter', () => { isHovering = true; });
+        carousel.addEventListener('mouseleave', () => { isHovering = false; });
+        startAutoPlay();
+
+        // ===== MOBILE MENU =====
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => { document.getElementById('mobile-menu').classList.toggle('hidden'); });
+        document.querySelectorAll('#mobile-menu a').forEach(l => l.addEventListener('click', () => document.getElementById('mobile-menu').classList.add('hidden')));
+
+        // ===== TOAST =====
+        function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toast-msg').textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+        document.getElementById('contact-form').addEventListener('submit', function(e) { e.preventDefault(); showToast('🦊 Application submitted! We\'ll be in touch.'); this.reset(); });
+
+        // ===== SCROLL ANIMATIONS =====
+        const obs = new IntersectionObserver((entries) => { entries.forEach(en => { if (en.isIntersecting) { en.target.style.opacity = '1'; en.target.style.transform = 'translateY(0)'; } }); }, { threshold: 0.1 });
+        document.querySelectorAll('section').forEach(s => { s.style.opacity = '0'; s.style.transform = 'translateY(20px)'; s.style.transition = 'opacity 0.6s ease, transform 0.6s ease'; obs.observe(s); });
+        document.getElementById('home').style.opacity = '1'; document.getElementById('home').style.transform = 'translateY(0)';
+
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => { nav.style.background = window.scrollY > 50 ? 'rgba(9,9,11,0.95)' : 'rgba(9,9,11,0.85)'; });
+    </script>
+</body>
+</html>
